@@ -21,6 +21,15 @@ const DEFAULT_TTS_RATE = 0.7;
 // đang dạy. Vì vậy toàn bộ audio trong app phải dùng giọng Anh-Anh.
 const DEFAULT_LANG = "en-GB";
 
+// Nhận diện giọng nói (STT) lại là chuyện khác: bé là người Việt học tiếng
+// Anh, giọng đọc chắc chắn không chuẩn bản xứ dù Anh-Anh hay Anh-Mỹ. Model
+// nhận diện "en-US" của Google được huấn luyện trên lượng dữ liệu lớn hơn
+// và bao dung hơn với giọng không bản xứ so với "en-GB" — dùng "en-GB" cho
+// STT chỉ khiến app "nghe" sai nhiều hơn mà không giúp gì cho việc dạy
+// phát âm (phần dạy phát âm British vẫn nằm ở TTS/quy tắc, không liên quan
+// đến việc máy có nhận ra đúng từ bé vừa nói hay không).
+const RECOGNITION_LANG = "en-US";
+
 // Danh sách giọng đọc có sẵn của trình duyệt chỉ được nạp bất đồng bộ; cache
 // lại và lắng nghe sự kiện "voiceschanged" để khi người dùng bấm nghe lần
 // đầu, danh sách gần như chắc chắn đã có sẵn.
@@ -114,7 +123,7 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
   // riêng, bắt đầu lại từ rỗng.
   let carriedTranscript = "";
   let lastSessionText = "";
-  let lang = opts.lang ?? DEFAULT_LANG;
+  let lang = opts.lang ?? RECOGNITION_LANG;
   let triedFallbackLang = false;
   let recognition: SpeechRecognitionLike = new Ctor();
 

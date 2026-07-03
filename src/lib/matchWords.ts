@@ -14,6 +14,39 @@ function normalizeToken(token: string): string {
   return token.toLowerCase().replace(/[^a-z']/g, "");
 }
 
+// Levenshtein ở cấp ký tự — dùng để cho phép sai lệch nhỏ giữa từ mong đợi
+// và từ máy nhận diện được.
+function levenshtein(a: string, b: string): number {
+  const n = a.length;
+  const m = b.length;
+  if (n === 0) return m;
+  if (m === 0) return n;
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array<number>(m + 1).fill(0));
+  for (let i = 0; i <= n; i++) dp[i][0] = i;
+  for (let j = 0; j <= m; j++) dp[0][j] = j;
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+    }
+  }
+  return dp[n][m];
+}
+
+// Nhận diện giọng nói hay bắt thiếu 1 âm cuối ("s", "ed"...) hoặc nghe nhầm
+// 1-2 ký tự do bé là người Việt học tiếng Anh, phát âm chưa hoàn toàn chuẩn.
+// Nếu bắt lỗi tuyệt đối từng ký tự thì phần lớn các trường hợp "đọc gần
+// đúng" sẽ bị tính sai oan — vì vậy chấp nhận sai lệch nhỏ tỉ lệ theo độ dài
+// từ thay vì yêu cầu khớp tuyệt đối.
+function wordsMatch(expected: string, heard: string): boolean {
+  if (expected === heard) return true;
+  if (!expected || !heard) return false;
+  const dist = levenshtein(expected, heard);
+  const maxLen = Math.max(expected.length, heard.length);
+  const allowed = maxLen <= 3 ? 0 : maxLen <= 6 ? 1 : 2;
+  return dist <= allowed;
+}
+
 export function alignTranscript(expectedWords: string[], transcriptWords: string[]): WordMatchResult[] {
   const exp = expectedWords.map(normalizeToken);
   const heard = transcriptWords.map(normalizeToken).filter(Boolean);
@@ -31,7 +64,7 @@ export function alignTranscript(expectedWords: string[], transcriptWords: string
 
   for (let i = 1; i <= n; i++) {
     for (let j = 1; j <= m; j++) {
-      const substCost = exp[i - 1] === heard[j - 1] ? 0 : 1;
+      const substCost = wordsMatch(exp[i - 1], heard[j - 1]) ? 0 : 1;
       dp[i][j] = Math.min(
         dp[i - 1][j - 1] + substCost, // match/substitute
         dp[i - 1][j] + 1, // expected word missing from speech
@@ -44,11 +77,12 @@ export function alignTranscript(expectedWords: string[], transcriptWords: string
   let i = n;
   let j = m;
   while (i > 0 || j > 0) {
-    const substCost = i > 0 && j > 0 ? (exp[i - 1] === heard[j - 1] ? 0 : 1) : Infinity;
+    const isClose = i > 0 && j > 0 && wordsMatch(exp[i - 1], heard[j - 1]);
+    const substCost = i > 0 && j > 0 ? (isClose ? 0 : 1) : Infinity;
     if (i > 0 && j > 0 && dp[i][j] === dp[i - 1][j - 1] + substCost) {
       results[i - 1] = {
         index: i - 1,
-        status: exp[i - 1] === heard[j - 1] ? "correct" : "incorrect",
+        status: isClose ? "correct" : "incorrect",
         heard: heard[j - 1],
       };
       i--;
