@@ -108,7 +108,12 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
   // động lại phiên nghe mới bất cứ khi nào onend xảy ra mà KHÔNG phải do
   // người dùng chủ động bấm dừng, và cộng dồn transcript qua các phiên.
   let stoppedByUser = false;
-  let finalTranscript = "";
+  // Văn bản đã "chốt" từ các phiên nghe TRƯỚC (trước khi bị Android tự ngắt
+  // và khởi động lại) — cộng dồn qua các phiên, KHÁC với transcript của
+  // phiên đang chạy (lastSessionText), vì mỗi phiên mới có event.results
+  // riêng, bắt đầu lại từ rỗng.
+  let carriedTranscript = "";
+  let lastSessionText = "";
   let lang = opts.lang ?? DEFAULT_LANG;
   let triedFallbackLang = false;
   let recognition: SpeechRecognitionLike = new Ctor();
@@ -120,16 +125,16 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
     instance.maxAlternatives = 1;
 
     instance.onresult = (event) => {
-      let interim = "";
+      // Tính lại TOÀN BỘ transcript của phiên hiện tại từ đầu mỗi lần có kết
+      // quả mới (event.results luôn chứa đủ lịch sử của phiên đang chạy) —
+      // KHÔNG được cộng dồn kiểu "+=" vào 1 biến ngoài, nếu không các đoạn
+      // đã chốt (final) sẽ bị nhân bản lặp lại mỗi khi có thêm kết quả mới.
+      let text = "";
       for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript + " ";
-        } else {
-          interim += result[0].transcript + " ";
-        }
+        text += event.results[i][0].transcript + " ";
       }
-      opts.onResult((finalTranscript + interim).trim(), false);
+      lastSessionText = text.trim();
+      opts.onResult((carriedTranscript + " " + lastSessionText).trim(), false);
     };
 
     instance.onerror = (event) => {
@@ -153,6 +158,10 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
         opts.onEnd?.();
         return;
       }
+      // Gộp phần đã nghe được của phiên vừa kết thúc vào phần "đã chốt" rồi
+      // mới mở phiên nghe mới, để không mất nội dung khi event.results reset.
+      carriedTranscript = (carriedTranscript + " " + lastSessionText).trim();
+      lastSessionText = "";
       try {
         recognition = new Ctor();
         attach(recognition);
