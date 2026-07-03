@@ -14,11 +14,6 @@ interface StoryReaderProps {
   story: Story;
 }
 
-// Thời gian ghi âm tối đa cho 1 câu — đủ dài để bé đọc chậm, đánh vần từng
-// từ mà không bị cắt ngang, nhưng vẫn có giới hạn để mic không treo mãi
-// nếu bé quên bấm "Dừng đọc".
-const MAX_RECORDING_MS = 25000;
-
 export default function StoryReader({ story }: StoryReaderProps) {
   const micSupported = useMemo(() => isSpeechRecognitionSupported(), []);
   const wallet = useWallet();
@@ -38,7 +33,6 @@ export default function StoryReader({ story }: StoryReaderProps) {
   const finalizedRef = useRef(false);
   const sentenceIdxRef = useRef(sentenceIdx);
   sentenceIdxRef.current = sentenceIdx;
-  const maxDurationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentSentence = story.sentences[sentenceIdx];
   const currentResults = resultsBySentence[sentenceIdx];
@@ -48,7 +42,6 @@ export default function StoryReader({ story }: StoryReaderProps) {
   useEffect(() => {
     return () => {
       recognitionRef.current?.stop();
-      if (maxDurationTimerRef.current) clearTimeout(maxDurationTimerRef.current);
     };
   }, []);
 
@@ -57,17 +50,9 @@ export default function StoryReader({ story }: StoryReaderProps) {
     return found ? found.status : "neutral";
   }
 
-  function clearMaxDurationTimer() {
-    if (maxDurationTimerRef.current) {
-      clearTimeout(maxDurationTimerRef.current);
-      maxDurationTimerRef.current = null;
-    }
-  }
-
   function finalizeSentence(transcript: string) {
     if (finalizedRef.current) return;
     finalizedRef.current = true;
-    clearMaxDurationTimer();
     const targetIdx = sentenceIdxRef.current;
     const expectedWords = story.sentences[targetIdx].map((t) => t.text);
     const heardWords = transcript.split(/\s+/).filter(Boolean);
@@ -87,11 +72,11 @@ export default function StoryReader({ story }: StoryReaderProps) {
     setLiveTranscript("");
     setIsRecording(true);
 
+    // Không đặt giới hạn thời gian ghi âm — bé tự đọc theo tốc độ riêng,
+    // đọc xong tự bấm "Dừng đọc" chứ không bị cắt ngang giữa chừng.
     recognitionRef.current = startRecognition({
       continuous: true,
       onResult: (transcript) => {
-        // Không tự dừng khi có 1 cụm "final" — con vẫn có thể đọc tiếp
-        // phần còn lại của câu qua các khoảng ngắt nghỉ tự nhiên.
         transcriptRef.current = transcript;
         setLiveTranscript(transcript);
       },
@@ -104,11 +89,6 @@ export default function StoryReader({ story }: StoryReaderProps) {
         finalizeSentence(transcriptRef.current);
       },
     });
-
-    clearMaxDurationTimer();
-    maxDurationTimerRef.current = setTimeout(() => {
-      recognitionRef.current?.stop();
-    }, MAX_RECORDING_MS);
   }
 
   function handleToggleRecording() {
