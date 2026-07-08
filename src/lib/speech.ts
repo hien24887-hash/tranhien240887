@@ -125,6 +125,10 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
   let lastSessionText = "";
   let lang = opts.lang ?? RECOGNITION_LANG;
   let triedFallbackLang = false;
+  // Đếm lỗi liên tiếp KHÔNG kèm theo bất kỳ kết quả nào — chỉ để tránh lặp
+  // lại vô hạn nếu mic/thiết bị thực sự hỏng, không dùng để báo lỗi ra ngoài
+  // cho các lỗi tạm thời bình thường (xem giải thích ở onerror bên dưới).
+  let consecutiveErrorsWithoutSpeech = 0;
   let recognition: SpeechRecognitionLike = new Ctor();
 
   function attach(instance: SpeechRecognitionLike) {
@@ -134,6 +138,7 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
     instance.maxAlternatives = 1;
 
     instance.onresult = (event) => {
+      consecutiveErrorsWithoutSpeech = 0;
       // Tính lại TOÀN BỘ transcript của phiên hiện tại từ đầu mỗi lần có kết
       // quả mới (event.results luôn chứa đủ lịch sử của phiên đang chạy) —
       // KHÔNG được cộng dồn kiểu "+=" vào 1 biến ngoài, nếu không các đoạn
@@ -158,8 +163,21 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         // Bị từ chối quyền micro — không có ý nghĩa để thử lại.
         stoppedByUser = true;
+        opts.onError?.(event.error);
+        return;
       }
-      opts.onError?.(event.error);
+      // Các lỗi khác (thường gặp nhất là "no-speech" — Android hay tự báo
+      // lỗi này sau vài giây im lặng dù bé chưa kịp đọc) sẽ được onend xử lý
+      // bằng cách tự mở phiên nghe mới ngay bên dưới. KHÔNG báo lỗi này ra
+      // component — nếu không, giao diện sẽ tưởng nhầm là mic đã dừng và
+      // chốt điểm ngay (thường với transcript rỗng), trong khi mic thực ra
+      // vẫn đang nghe tiếp ở phiên mới. Chỉ báo lỗi thật sự nếu lỗi lặp lại
+      // liên tục quá nhiều lần (mic/thiết bị có vấn đề thật).
+      consecutiveErrorsWithoutSpeech++;
+      if (consecutiveErrorsWithoutSpeech >= 6) {
+        stoppedByUser = true;
+        opts.onError?.(event.error);
+      }
     };
 
     instance.onend = () => {
