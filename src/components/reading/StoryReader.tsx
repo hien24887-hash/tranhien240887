@@ -23,6 +23,7 @@ export default function StoryReader({ story }: StoryReaderProps) {
   );
   const [isRecording, setIsRecording] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [micError, setMicError] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
   const [rewardPopup, setRewardPopup] = useState<AwardResult | null>(null);
   const recognitionRef = useRef<RecognitionHandle | null>(null);
@@ -70,6 +71,7 @@ export default function StoryReader({ story }: StoryReaderProps) {
     transcriptRef.current = "";
     finalizedRef.current = false;
     setLiveTranscript("");
+    setMicError(null);
     setIsRecording(true);
 
     // Không đặt giới hạn thời gian ghi âm — bé tự đọc theo tốc độ riêng,
@@ -84,8 +86,16 @@ export default function StoryReader({ story }: StoryReaderProps) {
         setIsRecording(false);
         finalizeSentence(transcriptRef.current);
       },
-      onError: () => {
+      onError: (error) => {
         setIsRecording(false);
+        if (error === "not-allowed" || error === "service-not-allowed") {
+          // Bị từ chối quyền micro — báo rõ lý do thay vì âm thầm chấm cả
+          // câu là sai (transcript rỗng), khiến phụ huynh/bé tưởng app lỗi.
+          setMicError(
+            'Trình duyệt chưa được cấp quyền Micro. Bấm vào biểu tượng khóa 🔒 cạnh đường link, cho phép Micro rồi bấm "Bắt đầu đọc" lại.'
+          );
+          return;
+        }
         finalizeSentence(transcriptRef.current);
       },
     });
@@ -217,6 +227,8 @@ export default function StoryReader({ story }: StoryReaderProps) {
           Đọc xong thì bấm "Dừng đọc".
         </p>
       )}
+
+      {micError && <p className="unsupported-note">⚠️ {micError}</p>}
 
       <div className="btn-row" style={{ marginTop: "1rem" }}>
         <button type="button" className="btn btn-ghost" onClick={handleListenSentence} disabled={isRecording}>
