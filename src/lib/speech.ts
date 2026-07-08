@@ -178,16 +178,32 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
       // mới mở phiên nghe mới, để không mất nội dung khi event.results reset.
       carriedTranscript = (carriedTranscript + " " + lastSessionText).trim();
       lastSessionText = "";
+      restart(250, 4);
+    };
+
+    instance.start();
+  }
+
+  // Nhiều máy Android cần một khoảng nghỉ ngắn giữa 2 phiên nghe — gọi
+  // start() lại ngay lập tức (cùng 1 tick) dễ bị ném lỗi (InvalidStateError)
+  // khiến phiên nghe kết thúc thật sự dù học sinh chưa hề bấm dừng. Vì vậy
+  // phải đợi 1 nhịp rồi mới thử lại, và nếu vẫn lỗi thì thử thêm vài lần
+  // nữa với thời gian chờ tăng dần, thay vì bỏ cuộc ngay ở lần đầu.
+  function restart(delayMs: number, attemptsLeft: number) {
+    window.setTimeout(() => {
+      if (stoppedByUser) return;
       try {
         recognition = new Ctor();
         attach(recognition);
         recognition.start();
       } catch {
-        opts.onEnd?.();
+        if (attemptsLeft > 0) {
+          restart(delayMs * 2, attemptsLeft - 1);
+        } else {
+          opts.onEnd?.();
+        }
       }
-    };
-
-    instance.start();
+    }, delayMs);
   }
 
   attach(recognition);
