@@ -72,9 +72,27 @@ function renderBack(item?: ClothingItem) {
   return null;
 }
 
+// Kiểu tóc mặc định (bob ngắn có mái) khi bé chưa mua kiểu tóc nào — để
+// nhân vật luôn có tóc, không bao giờ trông trọc đầu; mua tóc mới chỉ là
+// đổi SANG kiểu/màu khác, không phải "mở khoá" tóc từ chỗ trống không.
+const DEFAULT_HAIR_COLOR = "#7a5236";
+
 function renderHair(item?: ClothingItem) {
-  if (!item) return null;
-  const { shape, primary } = item;
+  const shape = item?.shape ?? "bob";
+  const primary = item?.primary ?? DEFAULT_HAIR_COLOR;
+  if (shape === "bob") {
+    return (
+      <g>
+        <path
+          d="M 44 60 Q 40 -6 100 -10 Q 160 -6 156 60 Q 156 34 144 30 Q 100 -18 56 30 Q 44 34 44 60 Z"
+          fill={primary}
+          stroke={INK}
+          strokeWidth="2"
+        />
+        <path d="M 66 22 Q 100 8 134 22 L 134 32 Q 100 18 66 32 Z" fill={primary} opacity={0.6} />
+      </g>
+    );
+  }
   if (shape === "short") {
     return (
       <path
@@ -175,7 +193,7 @@ function renderArms(cheering: boolean) {
 }
 
 function renderTop(item?: ClothingItem) {
-  const primary = item?.primary ?? "#e9ecef";
+  const primary = item?.primary ?? "#ffc4d6";
   const secondary = item?.secondary;
   const shape = item?.shape ?? "tshirt";
   return (
@@ -197,11 +215,21 @@ function renderTop(item?: ClothingItem) {
 }
 
 function renderBottom(item?: ClothingItem) {
-  const primary = item?.primary ?? "#dfe6e9";
-  const secondary = item?.secondary;
-  const shape = item?.shape ?? "shorts";
-  const height = shape === "pants" ? 36 : 22;
   const y = BODY_CY + BODY_RY - 14;
+  if (!item) {
+    // Mặc định: 1 chiếc váy xoè nhẹ thay vì quần short xám trơn, để nhân
+    // vật luôn trông có trang phục gọn gàng ngay cả khi chưa mua gì.
+    return (
+      <path
+        d={`M ${BODY_CX - 30} ${y} Q ${BODY_CX} ${y - 6} ${BODY_CX + 30} ${y} L ${BODY_CX + 40} ${y + 26} Q ${BODY_CX} ${y + 34} ${BODY_CX - 40} ${y + 26} Z`}
+        fill="#ff9ec0"
+        stroke={INK}
+        strokeWidth="2"
+      />
+    );
+  }
+  const { primary, secondary, shape } = item;
+  const height = shape === "pants" ? 36 : 22;
   return (
     <g>
       <rect x={BODY_CX - 34} y={y} width="68" height={height} rx="18" fill={primary} stroke={INK} strokeWidth="2" />
@@ -255,7 +283,7 @@ export default function Mascot({ pose = "idle", size = 96, equippedBySlot, equip
   }
 
   return (
-    <svg width={size} height={(size * 230) / 200} viewBox="0 0 200 230" role="img" aria-label="Bạn avatar chibi">
+    <svg width={size} height={(size * 230) / 200} viewBox="0 0 200 230" role="img" aria-label="Bạn avatar bé gái chibi">
       <defs>
         <radialGradient id="mascot-head-shine" cx="38%" cy="30%" r="75%">
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
@@ -312,17 +340,22 @@ export default function Mascot({ pose = "idle", size = 96, equippedBySlot, equip
       <ellipse cx="72" cy="82" rx="10" ry="5.5" fill="#ff9d8f" opacity={0.55} />
       <ellipse cx="128" cy="82" rx="10" ry="5.5" fill="#ff9d8f" opacity={0.55} />
 
-      {/* Mắt — to tròn kiểu chibi, có chấm sáng lấp lánh */}
+      {/* Mắt — to tròn kiểu chibi, có chấm sáng lấp lánh + mi cong nữ tính */}
       <circle cx="80" cy="66" r="9" fill={INK} />
       <circle cx="120" cy="66" r="9" fill={INK} />
       <circle cx="77.5" cy="62.5" r="2.6" fill="#ffffff" />
       <circle cx="117.5" cy="62.5" r="2.6" fill="#ffffff" />
+      <path d="M 70 58 Q 74 52 80 51" stroke={INK} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M 130 58 Q 126 52 120 51" stroke={INK} strokeWidth="2" fill="none" strokeLinecap="round" />
       {cheering && (
         <>
           <path d="M 71 66 Q 80 56 89 66" stroke="#ffffff" strokeWidth="2" fill="none" opacity={0.5} />
           <path d="M 111 66 Q 120 56 129 66" stroke="#ffffff" strokeWidth="2" fill="none" opacity={0.5} />
         </>
       )}
+
+      {/* Mũi — 1 chấm nhỏ, gợi tả nhẹ nhàng đúng phong cách chibi */}
+      <ellipse cx="100" cy="76" rx="2" ry="1.4" fill={INK} opacity={0.35} />
 
       {renderFace(outfit?.face)}
 
