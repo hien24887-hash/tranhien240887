@@ -1,6 +1,6 @@
-// Linh vật avatar của app — nhân vật robot đơn giản, dễ thương, có thể thay
-// đồ (mũ/tóc/kính/áo/quần/giày/phụ kiện), lấy cảm hứng chung từ các avatar
-// hoá thân phổ biến (không sao chép nhân vật có bản quyền cụ thể nào).
+// Linh vật avatar của app — nhân vật chibi tròn trịa (đầu to, thân bé bụ
+// bẫm), có thể thay đồ (mũ/tóc/kính/áo/quần/giày/phụ kiện). Thiết kế gốc,
+// không sao chép nhân vật có bản quyền cụ thể nào.
 
 import { findItem, type ClothingItem } from "../../data/wardrobe";
 
@@ -15,8 +15,18 @@ interface MascotProps {
   equippedItems?: Partial<Record<ClothingItem["slot"], ClothingItem>>;
 }
 
-const INK = "#1b1b1b";
-const SKIN = "#f5f6fa";
+const INK = "#2a2f3d";
+const SKIN = "#fdf1e6";
+
+// Toạ độ khung: đầu to chiếm gần nửa chiều cao nhân vật (tỉ lệ chibi),
+// thân bé tròn xoay, tay chân ngắn — khác hẳn dáng người thẳng trước đây.
+const HEAD_CX = 100;
+const HEAD_CY = 66;
+const HEAD_R = 52;
+const BODY_CX = 100;
+const BODY_CY = 152;
+const BODY_RX = 44;
+const BODY_RY = 40;
 
 function renderBack(item?: ClothingItem) {
   if (!item) return null;
@@ -24,30 +34,38 @@ function renderBack(item?: ClothingItem) {
   if (shape === "backpack") {
     return (
       <g>
-        <rect x="72" y="100" width="56" height="58" rx="14" fill={primary} stroke={INK} strokeWidth="2" />
-        <rect x="88" y="106" width="24" height="10" rx="4" fill={secondary ?? "#ffffff"} />
+        <rect x="62" y="114" width="76" height="66" rx="20" fill={primary} stroke={INK} strokeWidth="2" />
+        <rect x="84" y="122" width="32" height="12" rx="5" fill={secondary ?? "#ffffff"} />
       </g>
     );
   }
   if (shape === "cape") {
-    return <path d="M 70 100 L 26 215 L 100 178 L 174 215 L 130 100 Z" fill={primary} stroke={INK} strokeWidth="2" opacity={0.95} />;
+    return (
+      <path
+        d="M 66 116 L 20 214 L 100 184 L 180 214 L 134 116 Z"
+        fill={primary}
+        stroke={INK}
+        strokeWidth="2"
+        opacity={0.95}
+      />
+    );
   }
   if (shape === "skateboard") {
     return (
       <g>
         <rect
-          x="55"
-          y="128"
-          width="90"
+          x="48"
+          y="196"
+          width="104"
           height="16"
           rx="8"
           fill={primary}
           stroke={INK}
           strokeWidth="2"
-          transform="rotate(-12 100 136)"
+          transform="rotate(-8 100 204)"
         />
-        <circle cx="64" cy="152" r="6" fill={secondary ?? "#333"} stroke={INK} strokeWidth="1.5" />
-        <circle cx="136" cy="152" r="6" fill={secondary ?? "#333"} stroke={INK} strokeWidth="1.5" />
+        <circle cx="62" cy="216" r="7" fill={secondary ?? "#333"} stroke={INK} strokeWidth="1.5" />
+        <circle cx="138" cy="216" r="7" fill={secondary ?? "#333"} stroke={INK} strokeWidth="1.5" />
       </g>
     );
   }
@@ -58,14 +76,21 @@ function renderHair(item?: ClothingItem) {
   if (!item) return null;
   const { shape, primary } = item;
   if (shape === "short") {
-    return <path d="M 58 38 Q 100 6 142 38 L 142 26 Q 100 -2 58 26 Z" fill={primary} stroke={INK} strokeWidth="2" />;
+    return (
+      <path
+        d="M 46 48 Q 100 -8 154 48 L 154 30 Q 100 -24 46 30 Z"
+        fill={primary}
+        stroke={INK}
+        strokeWidth="2"
+      />
+    );
   }
   if (shape === "spiky") {
     return (
       <g fill={primary} stroke={INK} strokeWidth="2">
-        <path d="M 68 30 L 62 4 L 80 22 Z" />
-        <path d="M 90 22 L 90 -4 L 106 20 Z" />
-        <path d="M 112 22 L 122 0 L 132 26 Z" />
+        <path d="M 62 34 L 54 4 L 76 24 Z" />
+        <path d="M 88 22 L 88 -8 L 108 20 Z" />
+        <path d="M 114 24 L 126 -2 L 138 34 Z" />
       </g>
     );
   }
@@ -78,16 +103,16 @@ function renderFace(item?: ClothingItem) {
   if (shape === "glasses") {
     return (
       <g>
-        <rect x="70" y="44" width="26" height="17" rx="8.5" fill={primary} opacity={0.88} stroke={INK} strokeWidth="1.5" />
-        <rect x="104" y="44" width="26" height="17" rx="8.5" fill={primary} opacity={0.88} stroke={INK} strokeWidth="1.5" />
-        <rect x="96" y="49" width="8" height="5" fill={primary} opacity={0.88} />
+        <rect x="66" y="56" width="28" height="19" rx="9" fill={primary} opacity={0.88} stroke={INK} strokeWidth="1.5" />
+        <rect x="106" y="56" width="28" height="19" rx="9" fill={primary} opacity={0.88} stroke={INK} strokeWidth="1.5" />
+        <rect x="94" y="62" width="12" height="5" fill={primary} opacity={0.88} />
       </g>
     );
   }
   if (shape === "mask") {
     return (
       <path
-        d="M 64 38 Q 100 27 136 38 L 136 62 Q 100 74 64 62 Z"
+        d="M 58 50 Q 100 38 142 50 L 142 78 Q 100 92 58 78 Z"
         fill={primary}
         stroke={secondary ?? INK}
         strokeWidth="2"
@@ -104,57 +129,93 @@ function renderHat(item?: ClothingItem) {
   if (shape === "cap") {
     return (
       <g>
-        <path d="M 56 34 Q 100 2 144 34 L 144 42 Q 100 16 56 42 Z" fill={primary} stroke={INK} strokeWidth="2" />
-        <ellipse cx="70" cy="42" rx="22" ry="6" fill={secondary ?? primary} stroke={INK} strokeWidth="2" />
+        <path d="M 44 44 Q 100 -10 156 44 L 156 54 Q 100 12 44 54 Z" fill={primary} stroke={INK} strokeWidth="2" />
+        <ellipse cx="60" cy="54" rx="26" ry="7" fill={secondary ?? primary} stroke={INK} strokeWidth="2" />
       </g>
     );
   }
   if (shape === "beanie") {
-    return <path d="M 56 36 Q 100 0 144 36 L 144 46 L 56 46 Z" fill={primary} stroke={INK} strokeWidth="2" />;
+    return <path d="M 44 46 Q 100 -14 156 46 L 156 58 L 44 58 Z" fill={primary} stroke={INK} strokeWidth="2" />;
   }
   if (shape === "crown") {
     return (
       <g>
         <path
-          d="M 60 38 L 70 12 L 85 30 L 100 6 L 115 30 L 130 12 L 140 38 Z"
+          d="M 50 48 L 62 14 L 80 36 L 100 6 L 120 36 L 138 14 L 150 48 Z"
           fill={primary}
           stroke={INK}
           strokeWidth="2"
         />
-        <circle cx="70" cy="12" r="3.5" fill={secondary ?? "#e74c3c"} />
-        <circle cx="100" cy="6" r="3.5" fill={secondary ?? "#e74c3c"} />
-        <circle cx="130" cy="12" r="3.5" fill={secondary ?? "#e74c3c"} />
+        <circle cx="62" cy="14" r="4" fill={secondary ?? "#e74c3c"} />
+        <circle cx="100" cy="6" r="4" fill={secondary ?? "#e74c3c"} />
+        <circle cx="138" cy="14" r="4" fill={secondary ?? "#e74c3c"} />
       </g>
     );
   }
   return null;
 }
 
+function renderArms(cheering: boolean) {
+  // Tay ngắn tròn kiểu chibi — vẽ trước để thân đè lên nửa trong, chỉ còn
+  // thấy phần núm tròn nhô ra 2 bên, không cần khớp vai phức tạp.
+  if (cheering) {
+    return (
+      <>
+        <ellipse cx="42" cy="108" rx="17" ry="20" fill={SKIN} stroke={INK} strokeWidth="2" transform="rotate(-25 42 108)" />
+        <ellipse cx="158" cy="108" rx="17" ry="20" fill={SKIN} stroke={INK} strokeWidth="2" transform="rotate(25 158 108)" />
+      </>
+    );
+  }
+  return (
+    <>
+      <ellipse cx="52" cy="150" rx="17" ry="20" fill={SKIN} stroke={INK} strokeWidth="2" />
+      <ellipse cx="148" cy="150" rx="17" ry="20" fill={SKIN} stroke={INK} strokeWidth="2" />
+    </>
+  );
+}
+
 function renderTop(item?: ClothingItem) {
   const primary = item?.primary ?? "#e9ecef";
   const secondary = item?.secondary;
   const shape = item?.shape ?? "tshirt";
-  if (shape === "jersey") {
-    return (
-      <g>
-        <rect x="64" y="98" width="72" height="64" rx="20" fill={primary} stroke={INK} strokeWidth="2" />
-        <rect x="64" y="98" width="18" height="64" rx="9" fill={secondary ?? INK} opacity={0.85} />
-        <circle cx="100" cy="126" r="9" fill="#ffffff" stroke={primary} strokeWidth="2" />
-      </g>
-    );
-  }
-  return <rect x="64" y="98" width="72" height="64" rx="20" fill={primary} stroke={INK} strokeWidth="2" />;
+  return (
+    <g>
+      <ellipse cx={BODY_CX} cy={BODY_CY} rx={BODY_RX} ry={BODY_RY} fill={primary} stroke={INK} strokeWidth="2.5" />
+      {shape === "jersey" && (
+        <>
+          <path
+            d={`M ${BODY_CX} ${BODY_CY - BODY_RY} L ${BODY_CX} ${BODY_CY + BODY_RY}`}
+            stroke={secondary ?? INK}
+            strokeWidth="10"
+            opacity={0.75}
+          />
+          <circle cx={BODY_CX} cy={BODY_CY - 6} r="10" fill="#ffffff" stroke={primary} strokeWidth="2" />
+        </>
+      )}
+    </g>
+  );
 }
 
 function renderBottom(item?: ClothingItem) {
   const primary = item?.primary ?? "#dfe6e9";
   const secondary = item?.secondary;
   const shape = item?.shape ?? "shorts";
-  const height = shape === "pants" ? 58 : 32;
+  const height = shape === "pants" ? 36 : 22;
+  const y = BODY_CY + BODY_RY - 14;
   return (
     <g>
-      <rect x="66" y="162" width="68" height={height} rx="14" fill={primary} stroke={INK} strokeWidth="2" />
-      {secondary && <line x1="100" y1="162" x2="100" y2={162 + height} stroke={secondary} strokeWidth="3" opacity={0.6} />}
+      <rect x={BODY_CX - 34} y={y} width="68" height={height} rx="18" fill={primary} stroke={INK} strokeWidth="2" />
+      {secondary && (
+        <line
+          x1={BODY_CX}
+          y1={y}
+          x2={BODY_CX}
+          y2={y + height}
+          stroke={secondary}
+          strokeWidth="3"
+          opacity={0.6}
+        />
+      )}
     </g>
   );
 }
@@ -163,15 +224,16 @@ function renderShoes(item?: ClothingItem) {
   const primary = item?.primary ?? "#dcdde1";
   const secondary = item?.secondary;
   const shape = item?.shape ?? "sneakers";
-  const h = shape === "boots" ? 22 : 16;
+  const ry = shape === "boots" ? 13 : 9;
+  const cy = 206;
   return (
     <g>
-      <rect x="70" y={244 - h} width="26" height={h} rx="8" fill={primary} stroke={INK} strokeWidth="2" />
-      <rect x="104" y={244 - h} width="26" height={h} rx="8" fill={primary} stroke={INK} strokeWidth="2" />
+      <ellipse cx="82" cy={cy} rx="17" ry={ry} fill={primary} stroke={INK} strokeWidth="2" />
+      <ellipse cx="118" cy={cy} rx="17" ry={ry} fill={primary} stroke={INK} strokeWidth="2" />
       {secondary && (
         <>
-          <rect x="70" y={244 - h} width="26" height="5" rx="2.5" fill={secondary} />
-          <rect x="104" y={244 - h} width="26" height="5" rx="2.5" fill={secondary} />
+          <ellipse cx="82" cy={cy - ry + 3} rx="10" ry="3" fill={secondary} />
+          <ellipse cx="118" cy={cy - ry + 3} rx="10" ry="3" fill={secondary} />
         </>
       )}
     </g>
@@ -193,62 +255,82 @@ export default function Mascot({ pose = "idle", size = 96, equippedBySlot, equip
   }
 
   return (
-    <svg width={size} height={(size * 250) / 200} viewBox="0 0 200 250" role="img" aria-label="Bạn avatar mèo máy">
+    <svg width={size} height={(size * 230) / 200} viewBox="0 0 200 230" role="img" aria-label="Bạn avatar chibi">
+      <defs>
+        <radialGradient id="mascot-head-shine" cx="38%" cy="30%" r="75%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="mascot-body-shine" cx="38%" cy="24%" r="80%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Bóng đổ dưới chân, để nhân vật có cảm giác đứng trên mặt đất. */}
+      <ellipse cx="100" cy="222" rx="48" ry="7" fill="#1a2340" opacity={0.14} />
+
       {cheering && (
-        <g fill="#f4c53d" opacity={0.9}>
-          <circle cx="20" cy="50" r="5" />
-          <circle cx="180" cy="46" r="4" />
-          <circle cx="16" cy="150" r="4" />
-          <circle cx="186" cy="140" r="5" />
-          <circle cx="100" cy="10" r="4" />
+        <g fill="#ffb020" opacity={0.9}>
+          <circle cx="18" cy="56" r="5" />
+          <circle cx="184" cy="50" r="4" />
+          <circle cx="14" cy="150" r="4" />
+          <circle cx="188" cy="142" r="5" />
+          <circle cx="100" cy="6" r="4" />
         </g>
       )}
 
       {renderBack(outfit?.back)}
 
-      {/* Chân (da) */}
-      <rect x="74" y="196" width="16" height="42" rx="6" fill={SKIN} stroke={INK} strokeWidth="2" />
-      <rect x="110" y="196" width="16" height="42" rx="6" fill={SKIN} stroke={INK} strokeWidth="2" />
+      {/* Chân (da), nhô ra dưới thân và quần */}
+      <ellipse cx="82" cy="200" rx="15" ry="12" fill={SKIN} stroke={INK} strokeWidth="2" />
+      <ellipse cx="118" cy="200" rx="15" ry="12" fill={SKIN} stroke={INK} strokeWidth="2" />
 
       {renderShoes(outfit?.shoes)}
-      {renderBottom(outfit?.bottom)}
 
-      {/* Tay */}
-      {cheering ? (
-        <>
-          <rect x="18" y="98" width="20" height="52" rx="10" fill={SKIN} stroke={INK} strokeWidth="2" transform="rotate(-35 28 104)" />
-          <rect x="162" y="98" width="20" height="52" rx="10" fill={SKIN} stroke={INK} strokeWidth="2" transform="rotate(35 172 104)" />
-        </>
-      ) : (
-        <>
-          <rect x="38" y="104" width="20" height="54" rx="10" fill={SKIN} stroke={INK} strokeWidth="2" />
-          <rect x="142" y="104" width="20" height="54" rx="10" fill={SKIN} stroke={INK} strokeWidth="2" />
-        </>
-      )}
+      {renderArms(cheering)}
 
       {renderTop(outfit?.top)}
+      <ellipse
+        cx={BODY_CX}
+        cy={BODY_CY}
+        rx={BODY_RX}
+        ry={BODY_RY}
+        fill="url(#mascot-body-shine)"
+        pointerEvents="none"
+      />
 
-      {/* Cổ */}
-      <rect x="90" y="88" width="20" height="14" fill={SKIN} stroke={INK} strokeWidth="2" />
+      {renderBottom(outfit?.bottom)}
 
-      {/* Đầu */}
-      <circle cx="100" cy="52" r="42" fill={SKIN} stroke={INK} strokeWidth="2.5" />
+      {/* Đầu — to, tròn, chiếm gần nửa chiều cao để đúng tỉ lệ chibi */}
+      <circle cx={HEAD_CX} cy={HEAD_CY} r={HEAD_R} fill={SKIN} stroke={INK} strokeWidth="2.5" />
+      <circle cx={HEAD_CX} cy={HEAD_CY} r={HEAD_R} fill="url(#mascot-head-shine)" pointerEvents="none" />
 
       {renderHair(outfit?.hair)}
 
-      {/* Mắt */}
-      <ellipse cx="84" cy="50" rx="7" ry="10" fill={INK} />
-      <ellipse cx="116" cy="50" rx="7" ry="10" fill={INK} />
+      {/* Má hồng */}
+      <ellipse cx="72" cy="82" rx="10" ry="5.5" fill="#ff9d8f" opacity={0.55} />
+      <ellipse cx="128" cy="82" rx="10" ry="5.5" fill="#ff9d8f" opacity={0.55} />
+
+      {/* Mắt — to tròn kiểu chibi, có chấm sáng lấp lánh */}
+      <circle cx="80" cy="66" r="9" fill={INK} />
+      <circle cx="120" cy="66" r="9" fill={INK} />
+      <circle cx="77.5" cy="62.5" r="2.6" fill="#ffffff" />
+      <circle cx="117.5" cy="62.5" r="2.6" fill="#ffffff" />
       {cheering && (
         <>
-          <path d="M 76 50 Q 84 42 92 50" stroke="#ffffff" strokeWidth="2" fill="none" opacity={0.5} />
-          <path d="M 108 50 Q 116 42 124 50" stroke="#ffffff" strokeWidth="2" fill="none" opacity={0.5} />
+          <path d="M 71 66 Q 80 56 89 66" stroke="#ffffff" strokeWidth="2" fill="none" opacity={0.5} />
+          <path d="M 111 66 Q 120 56 129 66" stroke="#ffffff" strokeWidth="2" fill="none" opacity={0.5} />
         </>
       )}
 
       {renderFace(outfit?.face)}
 
-      {cheering && <path d="M 88 68 Q 100 78 112 68" stroke={INK} strokeWidth="2.4" fill="none" strokeLinecap="round" />}
+      {cheering ? (
+        <path d="M 86 88 Q 100 100 114 88" stroke={INK} strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      ) : (
+        <path d="M 90 88 Q 100 94 110 88" stroke={INK} strokeWidth="2.2" fill="none" strokeLinecap="round" opacity={0.7} />
+      )}
 
       {renderHat(outfit?.hat)}
     </svg>
