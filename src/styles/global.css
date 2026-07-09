@@ -49,6 +49,11 @@
   /* Nền chìm — cùng mô-típ sóng âm nhưng rất mờ nhạt, lặp lại khắp trang
      phía sau nội dung, để trang không bị phẳng/đơn điệu mà vẫn dễ đọc. */
   --wave-tile-faint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='72' viewBox='0 0 120 72'%3E%3Crect x='4' y='30' width='6' height='12' rx='3' fill='%232f63e8' fill-opacity='0.05'/%3E%3Crect x='16' y='20' width='6' height='32' rx='3' fill='%232f63e8' fill-opacity='0.08'/%3E%3Crect x='28' y='26' width='6' height='20' rx='3' fill='%232f63e8' fill-opacity='0.05'/%3E%3Crect x='40' y='14' width='6' height='44' rx='3' fill='%232f63e8' fill-opacity='0.09'/%3E%3Crect x='52' y='28' width='6' height='16' rx='3' fill='%232f63e8' fill-opacity='0.05'/%3E%3C/svg%3E");
+
+  /* Hoạ tiết trang trí thêm (dơi, trăng lưỡi liềm, sao lấp lánh, 1 bé thú
+     tai tròn nguyên bản) — chỉ là hình khối đơn giản mờ nhạt, không sao
+     chép nhân vật có bản quyền nào, rải rác nhẹ trên nền hiện có. */
+  --doodle-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='180' viewBox='0 0 220 180'%3E%3Cpath d='M20 40 Q8 20 20 24 Q26 30 28 40 Q30 30 36 24 Q48 20 36 40 Q30 34 28 44 Q26 34 20 40 Z' fill='%238b5cf6' fill-opacity='0.10'/%3E%3Cpath d='M120 24a13 13 0 1 0 0 26 10 10 0 1 1 0-26z' fill='%238b5cf6' fill-opacity='0.10'/%3E%3Cpath d='M180 100 L184 110 L194 114 L184 118 L180 128 L176 118 L166 114 L176 110 Z' fill='%238b5cf6' fill-opacity='0.12'/%3E%3Cpath d='M55 108 L58 114 L64 116 L58 118 L55 124 L52 118 L46 116 L52 114 Z' fill='%238b5cf6' fill-opacity='0.09'/%3E%3Ccircle cx='95' cy='140' r='13' fill='%238b5cf6' fill-opacity='0.10'/%3E%3Ccircle cx='85' cy='128' r='5.5' fill='%238b5cf6' fill-opacity='0.10'/%3E%3Ccircle cx='105' cy='128' r='5.5' fill='%238b5cf6' fill-opacity='0.10'/%3E%3C/svg%3E");
 }
 
 * {
@@ -66,9 +71,10 @@ body {
   font-family: var(--font-body);
   background-color: var(--paper);
   background-image: radial-gradient(560px circle at 96% -6%, rgba(47, 99, 232, 0.1), transparent 60%),
-    radial-gradient(480px circle at -6% 104%, rgba(255, 176, 32, 0.12), transparent 60%), var(--wave-tile-faint);
-  background-repeat: no-repeat, no-repeat, repeat;
-  background-attachment: fixed, fixed, fixed;
+    radial-gradient(480px circle at -6% 104%, rgba(255, 176, 32, 0.12), transparent 60%), var(--doodle-tile),
+    var(--wave-tile-faint);
+  background-repeat: no-repeat, no-repeat, repeat, repeat;
+  background-attachment: fixed, fixed, fixed, fixed;
   color: var(--ink);
   font-size: 18px;
   line-height: 1.55;
