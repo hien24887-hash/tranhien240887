@@ -18,21 +18,29 @@ const EMPTY_WALLET: WalletData = { spentVnd: 0, ownedItemIds: [], equippedBySlot
 interface ProgressState {
   wordStats: Record<string, { correct: number; attempts: number }>;
   storyScores: Record<string, { correct: number; total: number; playedAt: string }>;
+  listeningScores: Record<string, { correct: number; total: number; playedAt: string }>;
   totalStars: number;
   wallet: WalletData;
 }
 
-const EMPTY_STATE: ProgressState = { wordStats: {}, storyScores: {}, totalStars: 0, wallet: EMPTY_WALLET };
+const EMPTY_STATE: ProgressState = {
+  wordStats: {},
+  storyScores: {},
+  listeningScores: {},
+  totalStars: 0,
+  wallet: EMPTY_WALLET,
+};
 
 function loadState(): ProgressState {
   if (typeof window === "undefined") return EMPTY_STATE;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { wordStats: {}, storyScores: {}, totalStars: 0, wallet: { ...EMPTY_WALLET } };
+    if (!raw) return { wordStats: {}, storyScores: {}, listeningScores: {}, totalStars: 0, wallet: { ...EMPTY_WALLET } };
     const parsed = JSON.parse(raw) as Partial<ProgressState>;
     return {
       wordStats: parsed.wordStats ?? {},
       storyScores: parsed.storyScores ?? {},
+      listeningScores: parsed.listeningScores ?? {},
       totalStars: parsed.totalStars ?? 0,
       wallet: {
         spentVnd: parsed.wallet?.spentVnd ?? 0,
@@ -41,7 +49,7 @@ function loadState(): ProgressState {
       },
     };
   } catch {
-    return { wordStats: {}, storyScores: {}, totalStars: 0, wallet: { ...EMPTY_WALLET } };
+    return { wordStats: {}, storyScores: {}, listeningScores: {}, totalStars: 0, wallet: { ...EMPTY_WALLET } };
   }
 }
 
@@ -77,10 +85,17 @@ export function recordStoryScore(storyId: string, correct: number, total: number
   saveState(state);
 }
 
+export function recordListeningScore(lessonId: string, correct: number, total: number): void {
+  const state = loadState();
+  state.listeningScores[lessonId] = { correct, total, playedAt: new Date().toISOString() };
+  saveState(state);
+}
+
 export interface ProgressSummary {
   wordsTried: number;
   wordsMastered: number;
   storiesRead: number;
+  lessonsListened: number;
 }
 
 export function getProgressSummary(): ProgressSummary {
@@ -88,11 +103,16 @@ export function getProgressSummary(): ProgressSummary {
   const wordsTried = Object.keys(state.wordStats).length;
   const wordsMastered = Object.values(state.wordStats).filter((s) => s.correct > 0).length;
   const storiesRead = Object.keys(state.storyScores).length;
-  return { wordsTried, wordsMastered, storiesRead };
+  const lessonsListened = Object.keys(state.listeningScores).length;
+  return { wordsTried, wordsMastered, storiesRead, lessonsListened };
 }
 
 export function getStoryScores(): ProgressState["storyScores"] {
   return loadState().storyScores;
+}
+
+export function getListeningScores(): ProgressState["listeningScores"] {
+  return loadState().listeningScores;
 }
 
 export interface RewardTotals {

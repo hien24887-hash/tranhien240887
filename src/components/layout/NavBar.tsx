@@ -7,6 +7,7 @@ const links = [
   { to: "/transcribe", label: "Viết phiên âm" },
   { to: "/read", label: "Đọc truyện" },
   { to: "/danhvantienganh", label: "Luyện đọc 50 ngày" },
+  { to: "/nghehieu", label: "Nghe hiểu" },
   { to: "/wardrobe", label: "Tủ đồ" },
 ];
 
