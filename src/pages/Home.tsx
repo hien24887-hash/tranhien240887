@@ -48,7 +48,7 @@ export default function Home() {
           <Link
             to="/wardrobe"
             className="progress-pill"
-            style={{ textDecoration: "none", color: "var(--maroon-dark)" }}
+            style={{ textDecoration: "none", color: "var(--brand-deep)" }}
           >
             💰 {wallet.balanceVnd.toLocaleString("vi-VN")}đ — mua đồ ở Tủ đồ →
           </Link>
