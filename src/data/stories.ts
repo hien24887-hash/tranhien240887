@@ -508,13 +508,85 @@ const level5Stories: Story[] = [
   mini("t5-tomorrow", "Tomorrow", L5, 5, ["Tomorrow, I will know."]),
 ];
 
+// ---------------------------------------------------------------------------
+// Bổ sung thêm 30 bài đọc (6 bài / cấp độ), dựng từ đúng ngân hàng từ đã có
+// ở words.ts + connectors.ts để phiên âm luôn khớp chính xác.
+// ---------------------------------------------------------------------------
+const level1Extra: Story[] = [
+  mini("n1-ten-men-run", "Ten Men Run", L1, 1, ["Ten men run in the sun."]),
+  mini("n1-rat-hot-pot", "A Rat on a Pot", L1, 1, ["A rat sat on a hot pot."]),
+  mini("n1-his-pig-dig", "His Pig Can Dig", L1, 1, ["His pig can dig a pit."]),
+  mini("n1-ten-men-dog", "Ten Men and a Dog", L1, 1, ["Ten men and a dog sat in the sun."]),
+  mini("n1-jog-log", "Jog on the Log", L1, 1, ["The dog will jog on the log."]),
+  mini("n1-cut-nut-fun", "Fun to Cut a Nut", L1, 1, ["It is fun to cut a nut."]),
+];
+
+const level2Extra: Story[] = [
+  mini("n2-safe-wave-cave", "A Safe Wave by the Cave", L2, 2, ["The wave is safe by the cave."]),
+  mini("n2-hide-kite-gate", "Hide My Kite by the Gate", L2, 2, ["I will hide my kite by the gate."]),
+  mini("n2-june-huge-joke", "June's Huge Joke", L2, 2, ["June made a huge joke."]),
+  mini("n2-home-use-flute", "Home to Use the Flute", L2, 2, ["We hope to go home and use the flute."]),
+  mini("n2-note-for-me", "A Note for Me", L2, 2, ["Pete wrote a note for me at home."]),
+  mini("n2-mule-cube-mine", "The Mule and the Cube Are Mine", L2, 2, [
+    "The mule and the cube are mine.",
+  ]),
+];
+
+const level3Extra: Story[] = [
+  mini("n3-girl-saw-star", "The Girl Saw a Star", L3, 3, ["The girl saw a star in the dark."]),
+  mini("n3-her-short-horse", "Her Short Horse", L3, 3, ["Her horse is short but not old."]),
+  mini("n3-corn-from-farm", "Corn from the Farm", L3, 3, ["The bird got corn from the farm."]),
+  mini("n3-share-coat-storm", "Share a Coat in the Storm", L3, 3, [
+    "We share our coat in the storm.",
+  ]),
+  mini("n3-nurse-told-turn", "The Nurse Told Us to Turn", L3, 3, ["The nurse told us to turn."]),
+  mini("n3-dare-surf-shark", "Dare to Surf by the Shark", L3, 3, [
+    "I dare you to surf by the shark.",
+  ]),
+];
+
+const level4Extra: Story[] = [
+  mini("n4-queen-fix-ship", "The Queen Will Fix the Ship", L4, 4, ["The queen will fix the ship."]),
+  mini("n4-black-frog-swim", "A Black Frog Can Swim", L4, 4, ["A black frog can swim and spin."]),
+  mini("n4-fish-shop-shut", "The Fish Shop Is Shut", L4, 4, ["We think the fish shop is shut."]),
+  mini("n4-crab-in-box", "A Crab in the Box", L4, 4, ["Stop and look at the crab in the box."]),
+  mini("n4-yak-drop-drum", "The Yak Drops the Drum", L4, 4, ["The yak will drop the drum."]),
+  mini("n4-bring-black-brick", "Bring the Black Brick", L4, 4, [
+    "Bring the black brick to the shop.",
+  ]),
+];
+
+const level5Extra: Story[] = [
+  mini("n5-breakfast-together", "Breakfast Together", L5, 5, [
+    "My father and my sister have breakfast together.",
+  ]),
+  mini("n5-elephant-rabbit", "The Elephant and the Rabbit", L5, 5, [
+    "The elephant and the rabbit are under the apple.",
+  ]),
+  mini("n5-water-morning", "Water in the Morning", L5, 5, ["In the morning, my sister has water."]),
+  mini("n5-something-over-there", "Something Over There", L5, 5, [
+    "Something is over there, but nothing is here.",
+  ]),
+  mini("n5-tomorrow-birthday", "Tomorrow Is My Birthday", L5, 5, [
+    "Tomorrow is my birthday, and everyone will know.",
+  ]),
+  mini("n5-children-go-together", "The Children Go Together", L5, 5, [
+    "This weekend, the children go together.",
+  ]),
+];
+
 export const stories: Story[] = [
   ...handWritten,
   ...level1Stories,
+  ...level1Extra,
   ...level2Stories,
+  ...level2Extra,
   ...level3Stories,
+  ...level3Extra,
   ...level4Stories,
+  ...level4Extra,
   ...level5Stories,
+  ...level5Extra,
 ];
 
 export function findStory(id: string): Story | undefined {
