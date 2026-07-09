@@ -38,6 +38,29 @@ export const slotIcons: Record<ClothingSlot, string> = {
   back: "🎒",
 };
 
+// Icon riêng theo TỪNG kiểu dáng (shape) — để thẻ vật phẩm gợi ý đúng hình
+// dáng món đồ (mũ lưỡi trai khác vương miện khác mũ len...) thay vì chỉ
+// dùng chung 1 icon cho cả nhóm slot như trước, giúp bé dễ hình dung hơn
+// khi nhìn lướt qua danh sách.
+export const shapeIcons: Record<string, string> = {
+  cap: "🧢",
+  beanie: "🧶",
+  crown: "👑",
+  short: "💇",
+  spiky: "⚡",
+  glasses: "🕶️",
+  mask: "🥷",
+  tshirt: "👕",
+  jersey: "🎽",
+  shorts: "🩳",
+  pants: "👖",
+  sneakers: "👟",
+  boots: "🥾",
+  backpack: "🎒",
+  cape: "🦸",
+  skateboard: "🛹",
+};
+
 export const rarityLabels: Record<Rarity, string> = {
   common: "Chung",
   rare: "Hiếm",

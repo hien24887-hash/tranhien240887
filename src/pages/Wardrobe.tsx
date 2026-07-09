@@ -6,6 +6,7 @@ import {
   findItem,
   slotLabels,
   slotIcons,
+  shapeIcons,
   rarityLabels,
   rarityColors,
   type ClothingItem,
@@ -129,7 +130,7 @@ export default function Wardrobe() {
                     : item.primary,
                 }}
               >
-                {slotIcons[activeSlot]}
+                {shapeIcons[item.shape] ?? slotIcons[activeSlot]}
               </div>
               <div className="wardrobe-card__name">{item.name}</div>
               {owned ? (
