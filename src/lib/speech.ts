@@ -151,8 +151,27 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
 
   return {
     stop: () => {
+      if (stoppedByUser) return;
       stoppedByUser = true;
-      recognition.stop();
+      // Một số máy Android đôi khi "kẹt" và không thực sự dừng lắng nghe dù
+      // đã gọi stop() (mic phần cứng vẫn mở, onend không bao giờ bắn ra) —
+      // gọi thêm abort() (dừng ngay lập tức, huỷ luôn kết quả đang xử lý,
+      // mạnh tay hơn stop()) và đặt 1 mốc thời gian an toàn: nếu sau nửa
+      // giây trình duyệt vẫn chưa tự báo onend, tự coi như đã dừng để giao
+      // diện luôn trả lại quyền điều khiển cho học sinh, không bị treo.
+      try {
+        recognition.stop();
+      } catch {
+        // ignore — instance có thể đã ở trạng thái không cho phép stop()
+      }
+      window.setTimeout(() => {
+        try {
+          recognition.abort();
+        } catch {
+          // ignore
+        }
+      }, 150);
+      window.setTimeout(() => opts.onEnd?.(), 500);
     },
   };
 }
