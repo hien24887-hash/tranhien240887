@@ -19,10 +19,35 @@ export default function VoiceSettings() {
     setVoices(listEnglishVoices());
     const handleChange = () => setVoices(listEnglishVoices());
     window.speechSynthesis.onvoiceschanged = handleChange;
+
+    // Một số máy/engine (VD "Mi AI Speech Engine" trên Xiaomi/MIUI) không
+    // bao giờ bắn sự kiện "voiceschanged" dù danh sách giọng có nạp được
+    // muộn — dò lại thêm vài lần trong 5 giây đầu để không bỏ lỡ trường
+    // hợp đó, thay vì chỉ trông chờ vào sự kiện.
+    let tries = 0;
+    const poll = window.setInterval(() => {
+      tries += 1;
+      const found = listEnglishVoices();
+      if (found.length > 0) {
+        setVoices(found);
+        window.clearInterval(poll);
+      } else if (tries >= 10) {
+        window.clearInterval(poll);
+      }
+    }, 500);
+
     return () => {
       window.speechSynthesis.onvoiceschanged = null;
+      window.clearInterval(poll);
     };
   }, []);
+
+  function handleReload() {
+    setVoices(listEnglishVoices());
+    // Gọi speak() với chuỗi rỗng trong 1 số trường hợp giúp "đánh thức" bộ
+    // máy đọc mẫu để nó nạp lại danh sách giọng — vô hại nếu không cần.
+    window.speechSynthesis.cancel();
+  }
 
   function handleChoose(voice: SpeechSynthesisVoice) {
     setPreferredVoiceURI(voice.voiceURI);
@@ -44,10 +69,14 @@ export default function VoiceSettings() {
       )}
 
       {isSpeechSynthesisSupported() && voices.length === 0 && (
-        <p className="unsupported-note">
-          Máy này chưa có giọng đọc tiếng Anh nào được cài, hoặc trình duyệt chưa nạp xong danh sách — thử tải
-          lại trang.
-        </p>
+        <div className="unsupported-note">
+          Máy này chưa có giọng đọc tiếng Anh nào được cài, hoặc trình duyệt chưa nạp xong danh sách.
+          <div className="btn-row" style={{ marginTop: "0.6rem" }}>
+            <button type="button" className="btn btn-ghost" onClick={handleReload}>
+              🔄 Thử tải lại danh sách giọng
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="btn-row" style={{ marginBottom: "1.2rem" }}>
