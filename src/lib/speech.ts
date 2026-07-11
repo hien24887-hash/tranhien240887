@@ -21,8 +21,12 @@ export function isSpeechRecognitionSupported(): boolean {
 }
 
 // Tốc độ đọc mẫu mặc định — chậm hơn tốc độ nói bình thường (1.0) để bé
-// nghe rõ từng âm, nhưng không quá chậm đến mức méo tiếng.
-const DEFAULT_TTS_RATE = 0.7;
+// nghe rõ từng âm, nhưng không quá chậm đến mức méo tiếng. Từ khi bỏ việc
+// ép 1 giọng đọc cụ thể (xem ghi chú ở đầu file), trình duyệt tự chọn giọng
+// mặc định của máy — giọng mặc định trên nhiều máy có nhịp đọc chậm hơn
+// giọng cũ ở cùng 1 mức "rate", nên tăng nhẹ lên để tốc độ nghe được vẫn
+// tương đương như trước.
+const DEFAULT_TTS_RATE = 0.85;
 
 // Toàn bộ quy tắc/phiên âm trong app dạy theo giọng Anh-Anh (British, non-
 // rhotic): "r" đứng sau nguyên âm KHÔNG đọc (car → /kɑː/, her → /hɜː/...),
