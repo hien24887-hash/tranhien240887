@@ -8,6 +8,7 @@ const links = [
   { to: "/read", label: "Đọc truyện" },
   { to: "/danhvantienganh", label: "Luyện đọc 50 ngày" },
   { to: "/nghehieu", label: "Nghe hiểu" },
+  { to: "/giongdoc", label: "Giọng đọc" },
   { to: "/wardrobe", label: "Tủ đồ" },
 ];
 

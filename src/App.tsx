@@ -6,6 +6,7 @@ import Transcribe from "./pages/Transcribe";
 import Read from "./pages/Read";
 import DailyReading from "./pages/DailyReading";
 import Listening from "./pages/Listening";
+import VoiceSettings from "./pages/VoiceSettings";
 import Wardrobe from "./pages/Wardrobe";
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/read" element={<Read />} />
           <Route path="/danhvantienganh" element={<DailyReading />} />
           <Route path="/nghehieu" element={<Listening />} />
+          <Route path="/giongdoc" element={<VoiceSettings />} />
           <Route path="/wardrobe" element={<Wardrobe />} />
         </Routes>
       </div>

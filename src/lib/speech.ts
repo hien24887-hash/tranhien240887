@@ -60,11 +60,58 @@ function resolveTtsLang(preferredLang: string): string {
   return anyEnglish?.lang ?? preferredLang;
 }
 
+// Mỗi máy có 1 bộ giọng đọc khác nhau, không giọng nào "chuẩn" cho mọi máy
+// — thay vì tự đoán, cho bé/phụ huynh tự nghe thử và chọn giọng nào rõ nhất
+// trong số các giọng máy đang có, rồi ghi nhớ lựa chọn đó (localStorage).
+const VOICE_PREF_KEY = "ipa-app-voice-uri";
+
+export function getPreferredVoiceURI(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(VOICE_PREF_KEY);
+}
+
+export function setPreferredVoiceURI(voiceURI: string | null): void {
+  if (typeof window === "undefined") return;
+  if (voiceURI) window.localStorage.setItem(VOICE_PREF_KEY, voiceURI);
+  else window.localStorage.removeItem(VOICE_PREF_KEY);
+}
+
+/** Danh sách giọng tiếng Anh máy đang có, để hiển thị cho bé/phụ huynh chọn. */
+export function listEnglishVoices(): SpeechSynthesisVoice[] {
+  if (!isSpeechSynthesisSupported()) return [];
+  return window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
+}
+
+/** Nghe thử 1 giọng cụ thể (dùng ở trang chọn giọng) — KHÔNG lưu lại lựa chọn. */
+export function previewVoice(voice: SpeechSynthesisVoice, sampleText: string): void {
+  if (!isSpeechSynthesisSupported()) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(sampleText);
+  utter.voice = voice;
+  utter.lang = voice.lang;
+  utter.rate = DEFAULT_TTS_RATE;
+  window.speechSynthesis.speak(utter);
+}
+
 export function speak(text: string, opts?: { rate?: number; lang?: string }): void {
   if (!isSpeechSynthesisSupported() || !text) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = resolveTtsLang(opts?.lang ?? DEFAULT_LANG);
+
+  // Tra cứu LẠI (không dùng biến đã lưu từ trước) mỗi lần nói — tránh đúng
+  // lỗi "voice đã cache nhưng không còn hợp lệ" đã sửa ở trên, vì lần này
+  // luôn lấy object voice mới nhất ngay tại thời điểm gọi speak().
+  const preferredURI = getPreferredVoiceURI();
+  const preferredVoice = preferredURI
+    ? window.speechSynthesis.getVoices().find((v) => v.voiceURI === preferredURI)
+    : undefined;
+
+  if (preferredVoice) {
+    utter.voice = preferredVoice;
+    utter.lang = preferredVoice.lang;
+  } else {
+    utter.lang = resolveTtsLang(opts?.lang ?? DEFAULT_LANG);
+  }
   utter.rate = opts?.rate ?? DEFAULT_TTS_RATE;
   window.speechSynthesis.speak(utter);
 }
