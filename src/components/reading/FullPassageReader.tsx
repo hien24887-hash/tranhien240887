@@ -75,7 +75,6 @@ export default function FullPassageReader({ story }: FullPassageReaderProps) {
     // Không đặt giới hạn thời gian ghi âm — bài đọc 50 ngày để bé tự đọc
     // theo tốc độ riêng, đọc xong tự bấm "Dừng đọc" chứ không bị cắt ngang.
     recognitionRef.current = startRecognition({
-      continuous: true,
       onResult: (transcript) => {
         transcriptRef.current = transcript;
         setLiveTranscript(transcript);

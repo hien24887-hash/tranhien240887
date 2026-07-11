@@ -77,7 +77,6 @@ export default function StoryReader({ story }: StoryReaderProps) {
     // Không đặt giới hạn thời gian ghi âm — bé tự đọc theo tốc độ riêng,
     // đọc xong tự bấm "Dừng đọc" chứ không bị cắt ngang giữa chừng.
     recognitionRef.current = startRecognition({
-      continuous: true,
       onResult: (transcript) => {
         transcriptRef.current = transcript;
         setLiveTranscript(transcript);

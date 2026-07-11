@@ -1,6 +1,16 @@
 // Wrapper mỏng quanh Web Speech API: nói mẫu (TTS) + nhận diện giọng nói.
 // Nhận diện giọng nói chỉ được Chrome hỗ trợ tốt nên luôn phải feature-detect
 // trước khi dùng và báo cho người dùng biết nếu trình duyệt không hỗ trợ.
+//
+// Cả 2 phần TTS và STT bên dưới được đơn giản hoá lại theo đúng cách làm đã
+// chứng minh chạy ổn định trên điện thoại thật ở 1 app khác cùng người dùng
+// (D:\App Từ Mới): không tự gán 1 `SpeechSynthesisVoice` cụ thể cho TTS (chỉ
+// đặt `lang` rồi để trình duyệt tự chọn giọng — gán thẳng object voice dễ bị
+// "voice đã cache nhưng không còn hợp lệ" trên 1 số bản Chrome Android, gây
+// im lặng hoàn toàn mà không có lỗi nào cả), và STT dùng continuous=false +
+// interimResults=false, tự khởi động lại sau MỖI câu nói được nhận diện —
+// đây là cách khắc phục tiêu chuẩn cho việc Android không thực sự hỗ trợ
+// continuous=true dù khai báo, thay vì cố duy trì 1 phiên nghe liên tục.
 
 export function isSpeechSynthesisSupported(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
@@ -30,61 +40,11 @@ const DEFAULT_LANG = "en-GB";
 // đến việc máy có nhận ra đúng từ bé vừa nói hay không).
 const RECOGNITION_LANG = "en-US";
 
-// Danh sách giọng đọc có sẵn của trình duyệt chỉ được nạp bất đồng bộ; cache
-// lại và lắng nghe sự kiện "voiceschanged" để khi người dùng bấm nghe lần
-// đầu, danh sách gần như chắc chắn đã có sẵn.
-let cachedVoices: SpeechSynthesisVoice[] = [];
-if (typeof window !== "undefined" && isSpeechSynthesisSupported()) {
-  cachedVoices = window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged = () => {
-    cachedVoices = window.speechSynthesis.getVoices();
-  };
-}
-
-// Máy của người dùng có thể KHÔNG cài giọng đọc Anh-Anh (rất nhiều máy
-// Windows ở Việt Nam chỉ có sẵn giọng tiếng Việt + tiếng Anh-Mỹ mặc định).
-// Nếu ép cứng "en-GB" mà máy không có giọng đó, trình duyệt có thể chọn đại
-// 1 giọng hoàn toàn sai ngôn ngữ (nghe "sai hết") thay vì tự nhận ra không có
-// giọng phù hợp. Vì vậy phải dò theo thứ tự ưu tiên và luôn có phương án dự
-// phòng, thay vì chỉ đặt `lang` suông rồi hy vọng trình duyệt tự lo.
-function pickEnglishVoice(preferredLangPrefix: string): SpeechSynthesisVoice | undefined {
-  const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-  return (
-    voices.find((v) => v.lang.toLowerCase().startsWith(preferredLangPrefix.toLowerCase())) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith("en"))
-  );
-}
-
 export function speak(text: string, opts?: { rate?: number; lang?: string }): void {
-  if (!isSpeechSynthesisSupported()) return;
-  const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-  if (voices.length === 0) {
-    // Chrome trên Android thường chưa nạp xong danh sách giọng đọc ngay lần
-    // bấm đầu tiên (sự kiện "voiceschanged" bắn hơi trễ) — nếu gọi speak()
-    // ngay lúc này rất dễ ra im lặng hoàn toàn. Đợi 1 nhịp ngắn rồi thử lại
-    // đúng 1 lần thay vì bỏ cuộc luôn.
-    window.setTimeout(() => speakNow(text, opts), 300);
-    return;
-  }
-  speakNow(text, opts);
-}
-
-function speakNow(text: string, opts?: { rate?: number; lang?: string }): void {
+  if (!isSpeechSynthesisSupported() || !text) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
-  const preferredLang = opts?.lang ?? DEFAULT_LANG;
-  const voice = pickEnglishVoice(preferredLang);
-  if (voice) {
-    // Đặt lang khớp với giọng thực sự tìm được (không ép "en-GB" lên 1
-    // giọng en-US/khác — dễ gây méo tiếng nếu giọng và lang không khớp).
-    utter.voice = voice;
-    utter.lang = voice.lang;
-  } else {
-    // Máy hoàn toàn không có giọng tiếng Anh nào — vẫn thử với "en-US" vì
-    // đây là giọng phổ biến nhất, khả năng trình duyệt tự lo được cao hơn
-    // "en-GB" hiếm gặp.
-    utter.lang = "en-US";
-  }
+  utter.lang = opts?.lang ?? DEFAULT_LANG;
   utter.rate = opts?.rate ?? DEFAULT_TTS_RATE;
   window.speechSynthesis.speak(utter);
 }
@@ -95,12 +55,6 @@ export interface RecognitionHandle {
 
 export interface StartRecognitionOptions {
   lang?: string;
-  /** Mặc định true: tiếp tục nghe qua các khoảng ngắt nghỉ giữa các từ/cụm
-   * từ, để bé có đủ thời gian đọc hết cả câu thay vì bị cắt ngang giữa
-   * chừng. Việc dừng do người dùng chủ động bấm "Dừng đọc" hoặc do
-   * timeout an toàn ở nơi gọi hàm này quyết định, không phải do 1 khoảng
-   * lặng ngắn. */
-  continuous?: boolean;
   onResult: (transcript: string, isFinal: boolean) => void;
   onEnd?: () => void;
   onError?: (error: string) => void;
@@ -111,39 +65,33 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
   if (!maybeCtor) return null;
   const Ctor = maybeCtor;
 
-  // Chrome trên Android thường tự kết thúc phiên nghe sau một khoảng lặng
-  // ngắn dù đã đặt continuous=true (khác hẳn Chrome desktop) — nếu coi đó
-  // là "nghe xong" thì bé chưa kịp đọc gì app đã dừng. Vì vậy phải tự khởi
-  // động lại phiên nghe mới bất cứ khi nào onend xảy ra mà KHÔNG phải do
-  // người dùng chủ động bấm dừng, và cộng dồn transcript qua các phiên.
+  // Ghi âm chỉ thực sự dừng khi học sinh tự bấm "Dừng đọc" (stop()) hoặc
+  // quyền micro bị từ chối — mọi lỗi/kết thúc khác đều tự khởi động lại 1
+  // phiên nghe mới, không bao giờ tự bỏ cuộc vì lý do kỹ thuật.
   let stoppedByUser = false;
-  // Văn bản đã "chốt" từ các phiên nghe TRƯỚC (trước khi bị Android tự ngắt
-  // và khởi động lại) — cộng dồn qua các phiên, KHÁC với transcript của
-  // phiên đang chạy (lastSessionText), vì mỗi phiên mới có event.results
-  // riêng, bắt đầu lại từ rỗng.
+  // Cộng dồn các câu đã được nhận diện CHẮC CHẮN (final) qua nhiều phiên
+  // nghe liên tiếp (mỗi phiên chỉ nhận diện được 1 câu rồi tự kết thúc).
   let carriedTranscript = "";
-  let lastSessionText = "";
   let lang = opts.lang ?? RECOGNITION_LANG;
   let triedFallbackLang = false;
   let recognition: SpeechRecognitionLike = new Ctor();
 
   function attach(instance: SpeechRecognitionLike) {
     instance.lang = lang;
-    instance.continuous = opts.continuous ?? true;
-    instance.interimResults = true;
+    // continuous=false + interimResults=false: cách khắc phục tiêu chuẩn vì
+    // Android không thực sự "nghe liên tục" dù đặt continuous=true — mỗi
+    // phiên chỉ nhận diện 1 câu nói trọn vẹn rồi tự kết thúc (onend), sau đó
+    // attach() lại tự mở phiên mới ngay bên dưới để nghe câu tiếp theo.
+    instance.continuous = false;
+    instance.interimResults = false;
     instance.maxAlternatives = 1;
 
     instance.onresult = (event) => {
-      // Tính lại TOÀN BỘ transcript của phiên hiện tại từ đầu mỗi lần có kết
-      // quả mới (event.results luôn chứa đủ lịch sử của phiên đang chạy) —
-      // KHÔNG được cộng dồn kiểu "+=" vào 1 biến ngoài, nếu không các đoạn
-      // đã chốt (final) sẽ bị nhân bản lặp lại mỗi khi có thêm kết quả mới.
-      let text = "";
-      for (let i = 0; i < event.results.length; i++) {
-        text += event.results[i][0].transcript + " ";
-      }
-      lastSessionText = text.trim();
-      opts.onResult((carriedTranscript + " " + lastSessionText).trim(), false);
+      const last = event.results[event.results.length - 1];
+      const utterance = last[0].transcript.trim();
+      if (!utterance) return;
+      carriedTranscript = (carriedTranscript + " " + utterance).trim();
+      opts.onResult(carriedTranscript, false);
     };
 
     instance.onerror = (event) => {
@@ -161,12 +109,9 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
         opts.onError?.(event.error);
         return;
       }
-      // Các lỗi khác (thường gặp nhất là "no-speech" — Android hay tự báo
-      // lỗi này sau vài giây im lặng dù bé chưa kịp đọc, có thể lặp lại
-      // nhiều lần nếu bé đọc chậm/ngắt quãng dài) sẽ được onend xử lý bằng
-      // cách tự mở phiên nghe mới ngay bên dưới — KHÔNG BAO GIỜ tự dừng hẳn
-      // vì lỗi tạm thời, dù có lặp lại bao nhiêu lần đi nữa. Ghi âm chỉ thực
-      // sự dừng khi học sinh tự bấm "Dừng đọc" hoặc quyền micro bị từ chối.
+      // Các lỗi khác (thường gặp nhất là "no-speech" khi bé chưa kịp nói gì,
+      // hoặc khoảng lặng giữa các câu) sẽ được onend xử lý bằng cách tự mở
+      // phiên nghe mới ngay bên dưới — không báo lỗi ra ngoài.
     };
 
     instance.onend = () => {
@@ -174,10 +119,6 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
         opts.onEnd?.();
         return;
       }
-      // Gộp phần đã nghe được của phiên vừa kết thúc vào phần "đã chốt" rồi
-      // mới mở phiên nghe mới, để không mất nội dung khi event.results reset.
-      carriedTranscript = (carriedTranscript + " " + lastSessionText).trim();
-      lastSessionText = "";
       restart(250);
     };
 
@@ -187,10 +128,8 @@ export function startRecognition(opts: StartRecognitionOptions): RecognitionHand
   // Nhiều máy Android (đặc biệt máy Xiaomi/MIUI dùng "Mi AI Speech Engine")
   // cần một khoảng nghỉ giữa 2 phiên nghe — gọi start() lại ngay dễ bị ném
   // lỗi (InvalidStateError), và khoảng nghỉ cần thiết có thể khác nhau tuỳ
-  // máy. Yêu cầu của app là KHÔNG BAO GIỜ tự dừng hẳn vì lý do kỹ thuật —
-  // chỉ dừng khi học sinh tự bấm hoặc quyền micro bị từ chối — nên phải thử
-  // lại vô thời hạn (giãn cách tăng dần rồi giữ nguyên ở mức trần) thay vì
-  // bỏ cuộc sau vài lần.
+  // máy. Thử lại vô thời hạn (giãn cách tăng dần rồi giữ nguyên ở mức trần)
+  // thay vì bỏ cuộc sau vài lần, vì ghi âm không được phép tự dừng.
   function restart(delayMs: number) {
     window.setTimeout(() => {
       if (stoppedByUser) return;
