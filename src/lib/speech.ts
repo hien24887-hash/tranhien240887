@@ -44,11 +44,27 @@ const DEFAULT_LANG = "en-GB";
 // đến việc máy có nhận ra đúng từ bé vừa nói hay không).
 const RECOGNITION_LANG = "en-US";
 
+// Chỉ dùng danh sách giọng đọc để QUYẾT ĐỊNH CHUỖI `lang` phù hợp — không
+// bao giờ gán thẳng 1 object SpeechSynthesisVoice cụ thể cho utterance (đó
+// là điều gây lỗi im lặng đã sửa ở trên). Nhiều máy (đặc biệt máy Windows/
+// Android ở Việt Nam) không cài giọng Anh-Anh, chỉ có Anh-Mỹ — nếu cứ ép
+// "en-GB" trên máy không có giọng đó, một số máy sẽ không đọc được gì cả
+// thay vì tự chọn giọng gần đúng nhất.
+function resolveTtsLang(preferredLang: string): string {
+  if (!isSpeechSynthesisSupported()) return preferredLang;
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return preferredLang;
+  const hasPreferred = voices.some((v) => v.lang.toLowerCase().startsWith(preferredLang.toLowerCase()));
+  if (hasPreferred) return preferredLang;
+  const anyEnglish = voices.find((v) => v.lang.toLowerCase().startsWith("en"));
+  return anyEnglish?.lang ?? preferredLang;
+}
+
 export function speak(text: string, opts?: { rate?: number; lang?: string }): void {
   if (!isSpeechSynthesisSupported() || !text) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = opts?.lang ?? DEFAULT_LANG;
+  utter.lang = resolveTtsLang(opts?.lang ?? DEFAULT_LANG);
   utter.rate = opts?.rate ?? DEFAULT_TTS_RATE;
   window.speechSynthesis.speak(utter);
 }
