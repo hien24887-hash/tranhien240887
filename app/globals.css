@@ -1,0 +1,184 @@
+/* Mang theo hệ thống màu/font đã thiết kế cho bản Vite, để khi Giai đoạn 2
+   chuyển nội dung học vào đây, giao diện không bị đổi khác đột ngột. */
+:root {
+  --ink: #1e2433;
+  --ink-soft: #5b6472;
+  --paper: #f5f7fb;
+  --surface: #ffffff;
+
+  --brand: #2f63e8;
+  --brand-deep: #1a3d91;
+  --brand-soft: #eaf0ff;
+
+  --sun: #ffb020;
+  --sun-soft: #fff3dd;
+
+  --border: #e3e7f0;
+
+  --incorrect: #e14b3f;
+  --incorrect-bg: #fdecea;
+
+  --font-display: "Baloo 2", "Nunito", "Segoe UI", sans-serif;
+  --font-body: "Nunito", "Segoe UI", sans-serif;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  --shadow: 0 10px 26px rgba(31, 45, 90, 0.12);
+  --shadow-sm: 0 3px 10px rgba(31, 45, 90, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  color: var(--brand-deep);
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+.auth-card h1 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.field-inline {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.field-inline:focus {
+  outline: 3px solid var(--sun);
+  border-color: var(--brand);
+}
+
+.field input {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.field input:focus {
+  outline: 3px solid var(--sun);
+  border-color: var(--brand);
+}
+
+.btn-primary {
+  width: 100%;
+  font-family: var(--font-body);
+  font-weight: 800;
+  border: none;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-error {
+  background: var(--incorrect-bg);
+  border: 2px solid var(--incorrect);
+  color: var(--incorrect);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.form-success {
+  background: var(--sun-soft);
+  border: 2px solid var(--sun);
+  color: var(--brand-deep);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.auth-links {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-links a {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.child-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.child-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.child-card__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--brand-deep);
+  margin-bottom: 0.6rem;
+}

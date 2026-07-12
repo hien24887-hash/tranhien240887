@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String              @id @default(cuid())
+  email               String              @unique
+  passwordHash        String
+  createdAt           DateTime            @default(now())
+  children            Child[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Child {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  avatar        String   @default("girl-default")
+  createdAt     DateTime @default(now())
+
+  // Quy đổi thưởng (giữ đúng logic đang có trong bản Vite: 10 sao -> 1 cúp,
+  // 50 cúp -> 50.000đ) — chuyển từ localStorage sang lưu theo từng hồ sơ
+  // con, để nhiều bé dùng chung 1 tài khoản phụ huynh không bị lẫn tiến độ.
+  totalStars    Int      @default(0)
+  spentVnd      Int      @default(0)
+  ownedItemIds  String[] @default([])
+  equippedBySlot Json    @default("{}")
+
+  wordStats      WordAttemptStat[]
+  storyScores    StoryScore[]
+  listeningScores ListeningScore[]
+}
+
+model WordAttemptStat {
+  id        String @id @default(cuid())
+  childId   String
+  child     Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  word      String
+  attempts  Int    @default(0)
+  correct   Int    @default(0)
+
+  @@unique([childId, word])
+}
+
+model StoryScore {
+  id        String   @id @default(cuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  storyId   String
+  correct   Int
+  total     Int
+  playedAt  DateTime @default(now())
+
+  @@unique([childId, storyId])
+}
+
+model ListeningScore {
+  id        String   @id @default(cuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  lessonId  String
+  correct   Int
+  total     Int
+  playedAt  DateTime @default(now())
+
+  @@unique([childId, lessonId])
+}

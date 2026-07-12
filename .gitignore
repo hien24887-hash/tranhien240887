@@ -1,0 +1,18 @@
+# Dependencies
+node_modules
+
+# Next.js
+.next
+out
+
+# Prisma generated client
+app/generated
+
+# Env
+.env
+.env*.local
+
+# Misc
+*.log
+.DS_Store
+tsconfig.tsbuildinfo
