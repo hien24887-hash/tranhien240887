@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../app/generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 // Singleton Prisma client — tránh tạo nhiều kết nối khi Next.js hot-reload
 // trong môi trường dev (mỗi lần reload module sẽ tái sử dụng client cũ).
