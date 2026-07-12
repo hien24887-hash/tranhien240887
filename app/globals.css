@@ -148,6 +148,15 @@ h2 {
   font-size: 0.95rem;
 }
 
+.unsupported-note {
+  background: var(--sun-soft);
+  border: 2px dashed var(--sun);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+}
+
 .auth-links {
   margin-top: 1rem;
   text-align: center;

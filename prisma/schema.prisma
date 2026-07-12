@@ -17,6 +17,11 @@ model User {
   email               String              @unique
   passwordHash        String
   createdAt           DateTime            @default(now())
+  // Dùng thử miễn phí 4 ngày kể từ createdAt (tính trực tiếp, không cần lưu
+  // riêng). Sau khi phụ huynh thanh toán và admin xác nhận, isActivated bật
+  // lên true và tài khoản dùng được vĩnh viễn, không phụ thuộc thời hạn nữa.
+  isActivated         Boolean             @default(false)
+  activatedAt         DateTime?
   children            Child[]
   passwordResetTokens PasswordResetToken[]
 }
