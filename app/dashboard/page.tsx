@@ -29,18 +29,18 @@ export default async function DashboardPage() {
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "2rem 1.5rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.6rem" }}>
         <h1>Hồ sơ của tôi</h1>
-        <form action={logoutAction}>
-          <button type="submit" className="btn-primary" style={{ width: "auto" }}>
-            Đăng xuất
-          </button>
-        </form>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          {!user.isActivated && (
+            <span className="trial-pill">⏳ Còn {daysLeft} ngày dùng thử</span>
+          )}
+          <form action={logoutAction}>
+            <button type="submit" className="btn-primary" style={{ width: "auto" }}>
+              Đăng xuất
+            </button>
+          </form>
+        </div>
       </div>
       <p style={{ color: "var(--ink-soft)" }}>Đăng nhập với {session.email}</p>
-      {!user.isActivated && (
-        <p className="unsupported-note">
-          ⏳ Còn <strong>{daysLeft} ngày</strong> dùng thử miễn phí. Sau đó cần thanh toán để tiếp tục sử dụng.
-        </p>
-      )}
 
       {children.length === 0 ? (
         <p>Chưa có hồ sơ con nào — thêm hồ sơ đầu tiên bên dưới.</p>
