@@ -16,3 +16,6 @@ app/generated
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+
+.vercel
+.env*

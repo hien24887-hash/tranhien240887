@@ -21,13 +21,21 @@ export async function registerAction(_prev: AuthActionState, formData: FormData)
   if (!email || !password) return { error: "Vui lòng nhập đủ email và mật khẩu." };
   if (password.length < 6) return { error: "Mật khẩu cần ít nhất 6 ký tự." };
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "Email này đã được đăng ký." };
+  let userId: string;
+  try {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) return { error: "Email này đã được đăng ký." };
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({ data: { email, passwordHash } });
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({ data: { email, passwordHash } });
+    userId = user.id;
+  } catch (err) {
+    // TẠM THỜI để lộ chi tiết lỗi thật ra ngoài — chỉ để debug, xoá khối
+    // catch này ngay sau khi xác định xong nguyên nhân.
+    return { error: "DEBUG: " + (err instanceof Error ? `${err.name}: ${err.message}` : String(err)) };
+  }
 
-  await createSession({ userId: user.id, email: user.email });
+  await createSession({ userId, email });
   redirect("/dashboard");
 }
 
