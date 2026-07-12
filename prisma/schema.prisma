@@ -1,6 +1,11 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider      = "prisma-client"
+  output        = "../app/generated/prisma"
+  // "native" cho máy dev Windows, "rhel-openssl-3.0.x" cho môi trường chạy
+  // thật của Vercel (Linux) — thiếu dòng này khiến bản deploy chỉ có sẵn
+  // engine Windows, gây lỗi "could not locate the Query Engine" khi chạy
+  // thật trên Vercel dù build không báo lỗi gì.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
